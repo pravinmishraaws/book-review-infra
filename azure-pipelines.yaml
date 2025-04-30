@@ -21,9 +21,10 @@ stages:
       name: 'self-hosted-agent-pool'
     steps:
 
-    - task: UsePythonVersion@0
-      inputs:
-        versionSpec: '3.x'
+    # Not needed for self hosted agent, I have pre installed python    
+    # - task: UsePythonVersion@0
+    #   inputs:
+    #     versionSpec: '3.x'
 
     - task: AzureCLI@2
       inputs:
