@@ -27,7 +27,7 @@ stages:
 
     - task: AzureCLI@2
       inputs:
-        azureSubscription: 'my-azure-connection'
+        azureSubscription: 'it-azure-connection'
         scriptType: bash
         scriptLocation: inlineScript
         inlineScript: |
