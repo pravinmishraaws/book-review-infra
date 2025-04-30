@@ -1,0 +1,98 @@
+trigger:
+  paths:
+    include:
+      - terraform/**
+      - ansible/**
+  branches:
+    include:
+      - main
+
+stages:
+
+- stage: Terraform
+  displayName: 'Provision Infrastructure'
+  jobs:
+  - job: Terraform_Apply
+    displayName: 'Terraform Apply'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.x'
+
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: 'my-azure-connection'
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          echo "##[group]Terraform Init/Plan/Apply"
+          cd terraform
+          terraform init
+          terraform plan -var-file="envs/dev.tfvars"
+          terraform apply -auto-approve -var-file="envs/dev.tfvars"
+          echo "##[endgroup]"
+
+    - script: |
+        echo "Generating inventory.ini from Terraform output"
+        cd terraform
+        FRONTEND_IP=$(terraform output -raw frontend_public_ip)
+        BACKEND_IP=$(terraform output -raw backend_public_ip)
+
+        mkdir -p ../ansible
+        cat <<EOF > ../ansible/inventory.ini
+        [frontend]
+        $FRONTEND_IP
+
+        [backend]
+        $BACKEND_IP
+
+        [all:vars]
+        ansible_user=azureuser
+        ansible_ssh_private_key_file=~/.ssh/id_rsa
+        ansible_python_interpreter=/usr/bin/python3
+        EOF
+
+        # Write backend group_vars
+        cat <<EOF > ../ansible/group_vars/backend.yaml
+        backend_repo_url: "https://github.com/pravinmishraaws/book-review-app.git"
+        backend_app_port: 3001
+        db_host: "$MYSQL_DNS"
+        db_user: "mysqladmin"
+        db_password: "DevSecureDBPassword123!"
+        db_name: "book_review_db"
+        jwt_secret: "your_jwt_secret"
+        allowed_origins: "http://$FRONTEND_IP:3000"
+        EOF
+
+        # Write frontend group_vars
+        cat <<EOF > ../ansible/group_vars/frontend.yaml
+        frontend_repo_url: "https://github.com/pravinmishraaws/book-review-app.git"
+        frontend_app_port: 3000
+        backend_api_url: "http://$BACKEND_IP:3001"
+        EOF
+
+      displayName: 'Generate Dynamic inventory.ini'
+
+- stage: Ansible
+  displayName: 'Configure VMs using Ansible'
+  dependsOn: Terraform
+  condition: succeeded()
+  jobs:
+  - job: Ansible_Run
+    displayName: 'Run Ansible Playbook'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+
+    - script: |
+        sudo apt update
+        sudo apt install -y ansible sshpass
+      displayName: 'Install Ansible & SSH dependencies'
+
+    - script: |
+        cd ansible
+        ansible-playbook -i inventory.ini playbook.yml
+      displayName: 'Run Ansible Playbook'
