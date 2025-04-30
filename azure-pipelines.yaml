@@ -18,7 +18,7 @@ stages:
   - job: Terraform_Apply
     displayName: 'Terraform Apply'
     pool:
-      vmImage: 'self-hosted-agent-pool'
+      name: 'self-hosted-agent-pool'
     steps:
 
     - task: UsePythonVersion@0
@@ -87,7 +87,7 @@ stages:
   - job: Ansible_Run
     displayName: 'Run Ansible Playbook'
     pool:
-      vmImage: 'self-hosted-agent-pool'
+      name: 'self-hosted-agent-pool'
     steps:
 
     - script: |
