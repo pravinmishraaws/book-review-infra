@@ -13,11 +13,6 @@ variable "location" {
   type        = string
 }
 
-variable "resource_group_name" {
-  description = "Resource group where networking resources will be created"
-  type        = string
-}
-
 locals {
   resource_group_name = "${var.application_name}-${var.environment}"
 }
