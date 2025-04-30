@@ -7,6 +7,9 @@ trigger:
     include:
       - main
 
+variables:
+  - group: book-review-ssh
+
 stages:
 
 - stage: Terraform
@@ -32,7 +35,7 @@ stages:
           cd terraform
           terraform init
           terraform plan -var-file="envs/dev.tfvars"
-          terraform apply -auto-approve -var-file="envs/dev.tfvars"
+          terraform apply -auto-approve -var="ssh_public_key=$(SSH_PUBLIC_KEY)" -var-file="envs/dev.tfvars"
           echo "##[endgroup]"
 
     - script: |
@@ -91,6 +94,14 @@ stages:
         sudo apt update
         sudo apt install -y ansible sshpass
       displayName: 'Install Ansible & SSH dependencies'
+
+    # Write SSH private key to file
+    - script: |
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+      displayName: 'Setup SSH Private Key'
+      env:
+        SSH_PRIVATE_KEY: $(SSH_PRIVATE_KEY)  
 
     - script: |
         cd ansible

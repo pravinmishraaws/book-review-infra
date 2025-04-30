@@ -65,7 +65,7 @@ variable "mysql_database_name" {
 }
 
 variable "ssh_public_key" {
-  description = "Path to your SSH Public Key"
+  description = "The actual SSH public key string"
   type        = string
-  default     = "~/.ssh/id_rsa.pub"
 }
+
