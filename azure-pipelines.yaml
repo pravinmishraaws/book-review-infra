@@ -34,9 +34,9 @@ stages:
         inlineScript: |
           echo "##[group]Terraform Init/Plan/Apply"
           cd terraform
-          terraform init
-          terraform plan -var-file="envs/dev.tfvars"
-          terraform apply -auto-approve -var="ssh_public_key=$(SSH_PUBLIC_KEY)" -var-file="envs/dev.tfvars"
+          terraform init -input=false 
+          terraform plan -input=false -var-file="envs/dev.tfvars"
+          terraform apply -input=false -auto-approve -var="ssh_public_key=$(SSH_PUBLIC_KEY)" -var-file="envs/dev.tfvars"
           echo "##[endgroup]"
 
     - script: |
