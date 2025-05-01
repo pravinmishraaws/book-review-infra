@@ -24,21 +24,23 @@ stages:
     #     versionSpec: '3.x'
 
     - task: DownloadSecureFile@1
-      name: download_ssh_pub
+      name: download_ssh_key
       inputs:
         secureFile: 'id_rsa.pub'
 
     - script: |
         echo "Copying SSH public key into Terraform module"
-        mkdir -p ~/.ssh
-        cp $(download_ssh_key.secureFilePath) ~/.ssh/id_rsa.pub
-        # Copy into Terraform compute module where Terraform expects it
-        cp $(download_ssh_key.secureFilePath) terraform/modules/compute/id_rsa.pub
 
-        ls -l terraform/modules/compute/
-      name: extract_pubkey
+        mkdir -p ~/.ssh
+        cp "$DOWNLOAD_SECUREFILE_PATH" ~/.ssh/id_rsa.pub
+
+        # Now copy into Terraform module path
+        mkdir -p terraform/modules/compute
+        cp "$DOWNLOAD_SECUREFILE_PATH" terraform/modules/compute/id_rsa.pub
+
+        echo "Listing contents of terraform/modules/compute/"
+        ls -al terraform/modules/compute/
       displayName: 'Extract SSH Public Key for Terraform'
-    
 
     - task: AzureCLI@2
       inputs:
@@ -73,22 +75,18 @@ stages:
     - task: DownloadSecureFile@1
       name: download_ssh_key
       inputs:
-        secureFile: 'id_rsa.pub'
-    
+        secureFile: 'id_rsa' 
+
     - script: |
-        echo "Copying SSH public key into Terraform module"
-    
         mkdir -p ~/.ssh
-        cp "$DOWNLOAD_SECUREFILE_PATH" ~/.ssh/id_rsa.pub
-    
-        # Now copy into Terraform module path
-        mkdir -p terraform/modules/compute
-        cp "$DOWNLOAD_SECUREFILE_PATH" terraform/modules/compute/id_rsa.pub
-    
-        echo "Listing contents of terraform/modules/compute/"
-        ls -al terraform/modules/compute/
-      displayName: 'Extract SSH Public Key for Terraform'
-    
+        cp $(download_ssh_key.secureFilePath) ~/.ssh/id_rsa
+        ls -al ~/.ssh
+        head ~/.ssh/id_rsa
+        file ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+      displayName: 'Setup SSH Private Key'
+      env:
+        SSH_PRIVATE_KEY: $(SSH_PRIVATE_KEY)
 
     - script: |
         cd ansible
