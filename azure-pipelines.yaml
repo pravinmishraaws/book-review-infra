@@ -29,11 +29,13 @@ stages:
         secureFile: 'id_rsa.pub'
 
     - script: |
+        echo "Copying SSH public key into Terraform module"
         mkdir -p ~/.ssh
         cp $(download_ssh_key.secureFilePath) ~/.ssh/id_rsa.pub
-        chmod 644 ~/.ssh/id_rsa.pub
-        cp ~/.ssh/id_rsa.pub $(System.DefaultWorkingDirectory)/terraform/id_rsa.pub
-        ls -al $(System.DefaultWorkingDirectory)/terraform
+        # Copy into Terraform compute module where Terraform expects it
+        cp $(download_ssh_key.secureFilePath) terraform/modules/compute/id_rsa.pub
+
+        ls -l terraform/modules/compute/
       name: extract_pubkey
       displayName: 'Extract SSH Public Key for Terraform'
     
