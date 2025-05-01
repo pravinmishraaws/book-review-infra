@@ -20,8 +20,8 @@ stages:
     pool:
       name: 'self-hosted-agent-pool'
     steps:
-
-    # Not needed for self hosted agent, I have pre installed python    
+ 
+    # Not needed for hosted vm
     # - task: UsePythonVersion@0
     #   inputs:
     #     versionSpec: '3.x'
