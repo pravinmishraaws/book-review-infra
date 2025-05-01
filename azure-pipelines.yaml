@@ -32,11 +32,10 @@ stages:
         echo "Copying SSH public key into Terraform module"
 
         mkdir -p ~/.ssh
-        cp "$DOWNLOAD_SECUREFILE_PATH" ~/.ssh/id_rsa.pub
+        cp $(download_ssh_key.secureFilePath) ~/.ssh/id_rsa.pub
 
         # Now copy into Terraform module path
-        mkdir -p terraform/modules/compute
-        cp "$DOWNLOAD_SECUREFILE_PATH" terraform/modules/compute/id_rsa.pub
+        cp $(download_ssh_key.secureFilePath) terraform/modules/compute/id_rsa.pub
 
         echo "Listing contents of terraform/modules/compute/"
         ls -al terraform/modules/compute/
