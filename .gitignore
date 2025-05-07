@@ -27,7 +27,8 @@ terraform/*.tfvars.json
 *.tmp
 *.log
 .env
-/.vscode
+.vscode/
 
 # === Ansible Code ===
-/ansible
+ansible/
+
